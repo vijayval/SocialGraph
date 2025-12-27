@@ -1,0 +1,50 @@
+@Stunsy.SocialGraph.Api_HostAddress = http://localhost:5195
+
+### Health Check
+GET {{Stunsy.SocialGraph.Api_HostAddress}}/health
+Accept: application/json
+
+### Follow a user (Idempotent)
+POST {{Stunsy.SocialGraph.Api_HostAddress}}/follows/user2
+Content-Type: application/json
+
+{
+  "followerId": "user1"
+}
+
+### Follow again (Idempotent test)
+POST {{Stunsy.SocialGraph.Api_HostAddress}}/follows/user2
+Content-Type: application/json
+
+{
+  "followerId": "user1"
+}
+
+### Unfollow a user (Soft delete)
+DELETE {{Stunsy.SocialGraph.Api_HostAddress}}/follows/user2
+Content-Type: application/json
+
+{
+  "followerId": "user1"
+}
+
+### Get followers of a user
+GET {{Stunsy.SocialGraph.Api_HostAddress}}/users/user2/followers
+Accept: application/json
+
+### Get following for a user
+GET {{Stunsy.SocialGraph.Api_HostAddress}}/users/user1/following
+Accept: application/json
+
+### Get followers count
+GET {{Stunsy.SocialGraph.Api_HostAddress}}/users/user2/followers/count
+Accept: application/json
+
+### Get following count
+GET {{Stunsy.SocialGraph.Api_HostAddress}}/users/user1/following/count
+Accept: application/json
+
+### Check if user is following another user
+GET {{Stunsy.SocialGraph.Api_HostAddress}}/users/user1/is-following/user2
+Accept: application/json
+
