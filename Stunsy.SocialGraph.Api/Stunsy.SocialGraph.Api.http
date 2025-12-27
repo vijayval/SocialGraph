@@ -1,0 +1,6 @@
+@Stunsy.SocialGraph.Api_HostAddress = http://localhost:5195
+
+GET {{Stunsy.SocialGraph.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
