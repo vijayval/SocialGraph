@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stunsy.SocialGraph.Api.Models;
 using Stunsy.SocialGraph.Api.Services;
@@ -17,6 +18,7 @@ public class FollowsController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize]
     [HttpPost("{followeeId}")]
     public async Task<ActionResult<FollowResponse>> Follow(string followeeId, [FromBody] FollowRequest request)
     {
@@ -47,28 +49,26 @@ public class FollowsController : ControllerBase
         }
     }
 
-    [HttpDelete("{followeeId}")]
-    public async Task<ActionResult> Unfollow(string followeeId, [FromBody] FollowRequest request)
+[Authorize]
+[HttpDelete("{followerId}/{followeeId}")]
+public async Task<ActionResult> Unfollow(string followerId, string followeeId)
+{
+    if (string.IsNullOrWhiteSpace(followerId))
+        return BadRequest("FollowerId is required");
+
+    if (string.IsNullOrWhiteSpace(followeeId))
+        return BadRequest("FolloweeId is required");
+
+    try
     {
-        if (string.IsNullOrWhiteSpace(request.FollowerId))
-        {
-            return BadRequest("FollowerId is required");
-        }
-
-        if (string.IsNullOrWhiteSpace(followeeId))
-        {
-            return BadRequest("FolloweeId is required");
-        }
-
-        try
-        {
-            await _gremlinService.UnfollowUserAsync(request.FollowerId, followeeId);
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in Unfollow endpoint");
-            return StatusCode(500, "Internal server error");
-        }
+        await _gremlinService.UnfollowUserAsync(followerId, followeeId);
+        return NoContent();
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error in Unfollow endpoint");
+        return StatusCode(500, "Internal server error");
+    }
+}
+
 }

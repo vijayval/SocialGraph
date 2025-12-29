@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stunsy.SocialGraph.Api.Models;
 using Stunsy.SocialGraph.Api.Services;
@@ -97,6 +98,7 @@ public class UsersController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("{id}/is-following/{targetId}")]
     public async Task<ActionResult<IsFollowingResponse>> IsFollowing(string id, string targetId)
     {
