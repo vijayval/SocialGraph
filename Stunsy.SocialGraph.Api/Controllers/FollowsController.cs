@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stunsy.SocialGraph.Api.Models;
@@ -20,39 +22,44 @@ public class FollowsController : ControllerBase
 
     [Authorize]
     [HttpPost("{followeeId}")]
-    public async Task<ActionResult<FollowResponse>> Follow(string followeeId, [FromBody] FollowRequest request)
+public async Task<ActionResult<FollowResponse>> Follow(string followeeId)
+{
+    if (string.IsNullOrWhiteSpace(followeeId))
+        return BadRequest("FolloweeId is required");
+
+    var followerId =
+        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+        User.FindFirst("sub")?.Value ??
+        User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+    if (string.IsNullOrWhiteSpace(followerId))
+        return Unauthorized(); // better than BadRequest
+
+    if (followerId == followeeId)
+        return BadRequest("Cannot follow yourself");
+
+    try
     {
-        if (string.IsNullOrWhiteSpace(request.FollowerId))
-        {
-            return BadRequest("FollowerId is required");
-        }
-
-        if (string.IsNullOrWhiteSpace(followeeId))
-        {
-            return BadRequest("FolloweeId is required");
-        }
-
-        if (request.FollowerId == followeeId)
-        {
-            return BadRequest("Cannot follow yourself");
-        }
-
-        try
-        {
-            var result = await _gremlinService.FollowUserAsync(request.FollowerId, followeeId);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in Follow endpoint");
-            return StatusCode(500, "Internal server error");
-        }
+        var result = await _gremlinService.FollowUserAsync(followerId, followeeId);
+        return Ok(result);
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error in Follow endpoint");
+        return StatusCode(500, "Internal server error");
+    }
+}
+
 
 [Authorize]
-[HttpDelete("{followerId}/{followeeId}")]
-public async Task<ActionResult> Unfollow(string followerId, string followeeId)
+[HttpDelete("{followeeId}")]
+public async Task<ActionResult> Unfollow(string followeeId)
 {
+     var followerId =
+        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+        User.FindFirst("sub")?.Value ??
+        User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
     if (string.IsNullOrWhiteSpace(followerId))
         return BadRequest("FollowerId is required");
 

@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stunsy.SocialGraph.Api.Models;
@@ -38,17 +40,24 @@ public class UsersController : ControllerBase
         }
     }
 
-    [HttpGet("{id}/following")]
-    public async Task<ActionResult<List<UserResponse>>> GetFollowing(string id)
+    //[Authorize]
+    [HttpGet("/following")]
+    public async Task<ActionResult<List<UserResponse>>> GetFollowing()
     {
-        if (string.IsNullOrWhiteSpace(id))
+        // var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+        //             ?? User.FindFirst("sub")?.Value
+        //             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var userId = "99ed94df-17f6-48e8-b878-09406899bc48";
+                    
+        if (string.IsNullOrWhiteSpace(userId))
         {
             return BadRequest("User ID is required");
         }
 
         try
         {
-            var result = await _gremlinService.GetFollowingAsync(id);
+            var result = await _gremlinService.GetFollowingAsync(userId);
             return Ok(result);
         }
         catch (Exception ex)

@@ -47,7 +47,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             OnMessageReceived = context =>
             {
                 var authValues = context.Request.Headers.TryGetValue("Authorization", out var vals) ? vals : default;
-                var bearer = authValues.FirstOrDefault(v => v.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase));
+                var bearer = authValues.Where(v => v != null).FirstOrDefault(v => v!.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase));
                 if (string.IsNullOrWhiteSpace(bearer))
                 {
                     // No bearer header -> tell the middleware not to try anything
@@ -71,6 +71,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("LocalAllow", policy =>
+      policy.WithOrigins("http://localhost:3000") // add other origins if needed
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -87,5 +97,6 @@ app.MapHealthChecks("/health");
 
 // Map controllers
 app.MapControllers();
+app.UseCors("LocalAllow");
 
 app.Run();
