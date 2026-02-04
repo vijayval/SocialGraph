@@ -57,6 +57,44 @@ jobs:
         Jwt__Issuer: ${{ vars.JWT_ISSUER }}
         ProfileApiBaseUrl: ${{ vars.PROFILE_API_BASE_URL }}
 
+    - name: Wait for deployment to complete
+      run: Start-Sleep -Seconds 30
+      
+    - name: Health Check with Detailed Logging
+      run: |
+        $url = "https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/health"
+        Write-Host "Testing endpoint: $url"
+        Write-Host "================================"
+        
+        try {
+          $response = curl -v -s -w "\nHTTP_CODE:%{http_code}\nTIME_TOTAL:%{time_total}s\n" $url 2>&1
+          Write-Host "Curl Response:"
+          Write-Host $response
+          Write-Host "================================"
+          
+          # Extract HTTP status code
+          if ($response -match "HTTP_CODE:(\d+)") {
+            $statusCode = $matches[1]
+            Write-Host "Status Code: $statusCode"
+            
+            if ($statusCode -eq 200) {
+              Write-Host "✓ Health check passed!"
+              exit 0
+            } else {
+              Write-Host "✗ Health check failed with status code: $statusCode"
+              exit 1
+            }
+          } else {
+            Write-Host "✗ Could not determine status code"
+            Write-Host "Full output: $response"
+            exit 1
+          }
+        } catch {
+          Write-Host "✗ Error occurred during health check:"
+          Write-Host $_.Exception.Message
+          Write-Host $_.Exception.StackTrace
+          exit 1
+        }
         
     - name: Azure Logout
       run: az logout
