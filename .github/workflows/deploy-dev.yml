@@ -1,0 +1,54 @@
+name: Deploy to Azure App Service (Dev)
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  AZURE_WEBAPP_NAME: 'stunsy-socialgraph-api-dev'
+  AZURE_WEBAPP_PACKAGE_PATH: './Stunsy.SocialGraph.Api'
+  ASPNETCORE_ENVIRONMENT: 'Development'
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    environment: dev
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+      
+    - name: Publish
+      run: dotnet publish ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/Stunsy.SocialGraph.Api.csproj -c Release -o ${{ github.workspace }}/publish
+      
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DEV }}
+        package: ${{ github.workspace }}/publish
+      env:
+        ASPNETCORE_ENVIRONMENT: 'Development'
+        Gremlin__Hostname: ${{ vars.GREMLIN_HOSTNAME }}
+        Gremlin__Port: ${{ vars.GREMLIN_PORT }}
+        Gremlin__Database: ${{ vars.GREMLIN_DATABASE }}
+        Gremlin__Container: ${{ vars.GREMLIN_CONTAINER }}
+        Gremlin__AuthKey: ${{ secrets.GREMLIN_AUTHKEY }}
+        Gremlin__EnableSsl: 'true'
+        Jwt__Secret: ${{ secrets.JWT_SECRET }}
+        Jwt__Issuer: ${{ vars.JWT_ISSUER }}
+        ProfileApiBaseUrl: ${{ vars.PROFILE_API_BASE_URL }}
