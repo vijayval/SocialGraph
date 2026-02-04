@@ -67,32 +67,41 @@ jobs:
         Write-Host "================================"
         
         try {
-          $response = curl -v -s -w "\nHTTP_CODE:%{http_code}\nTIME_TOTAL:%{time_total}s\n" $url 2>&1
-          Write-Host "Curl Response:"
-          Write-Host $response
+          # Use Invoke-WebRequest for better Windows compatibility
+          $response = Invoke-WebRequest -Uri $url -Method Get -UseBasicParsing -TimeoutSec 30 -Verbose
+          
+          Write-Host "✓ Health check successful!"
+          Write-Host "Status Code: $($response.StatusCode)"
+          Write-Host "Status Description: $($response.StatusDescription)"
+          Write-Host "--------------------------------"
+          Write-Host "Response Headers:"
+          $response.Headers | Format-Table -AutoSize | Out-String | Write-Host
+          Write-Host "--------------------------------"
+          Write-Host "Response Body:"
+          Write-Host $response.Content
           Write-Host "================================"
           
-          # Extract HTTP status code
-          if ($response -match "HTTP_CODE:(\d+)") {
-            $statusCode = $matches[1]
-            Write-Host "Status Code: $statusCode"
-            
-            if ($statusCode -eq 200) {
-              Write-Host "✓ Health check passed!"
-              exit 0
-            } else {
-              Write-Host "✗ Health check failed with status code: $statusCode"
-              exit 1
-            }
+          if ($response.StatusCode -eq 200) {
+            Write-Host "✓ Health check passed!"
+            exit 0
           } else {
-            Write-Host "✗ Could not determine status code"
-            Write-Host "Full output: $response"
+            Write-Host "✗ Unexpected status code: $($response.StatusCode)"
             exit 1
           }
+          
         } catch {
           Write-Host "✗ Error occurred during health check:"
-          Write-Host $_.Exception.Message
-          Write-Host $_.Exception.StackTrace
+          Write-Host "Error Message: $($_.Exception.Message)"
+          
+          if ($_.Exception.Response) {
+            Write-Host "Response Status Code: $($_.Exception.Response.StatusCode.Value__)"
+            Write-Host "Response Status Description: $($_.Exception.Response.StatusDescription)"
+          }
+          
+          Write-Host "--------------------------------"
+          Write-Host "Full Exception:"
+          Write-Host $_.Exception | Format-List -Force | Out-String
+          Write-Host "================================"
           exit 1
         }
         
