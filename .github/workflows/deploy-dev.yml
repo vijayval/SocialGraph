@@ -8,7 +8,7 @@ on:
 
 env:
   DOTNET_VERSION: '9.0.x'
-  AZURE_WEBAPP_NAME: 'stunsy-socialgraph-api-dev'
+  AZURE_WEBAPP_NAME: 'stunsy-socialgraph-api-staging'
   AZURE_WEBAPP_PACKAGE_PATH: './Stunsy.SocialGraph.Api'
   ASPNETCORE_ENVIRONMENT: 'Development'
 
