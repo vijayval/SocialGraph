@@ -8,6 +8,12 @@ using Stunsy.SocialGraph.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+
 // Add configuration
 builder.Services.Configure<GremlinConfiguration>(
     builder.Configuration.GetSection("Gremlin"));

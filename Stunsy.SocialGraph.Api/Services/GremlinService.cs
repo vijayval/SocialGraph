@@ -64,7 +64,15 @@ public class GremlinService : IGremlinService, IDisposable
             {
                 // Edge exists - reactivate if inactive (idempotent)
                 var edge = edgeList[0];
-                var isActive = edge.GetValueOrDefault("isActive", false);
+                bool isActive = true;
+                try
+                {
+                    isActive = edge["isActive"];
+                }
+                catch
+                {
+                    isActive = false;
+                }
                 
                 if (!isActive)
                 {
@@ -74,8 +82,15 @@ public class GremlinService : IGremlinService, IDisposable
                 }
                 
                 // Get createdAtUtc from existing edge
-                var createdAtValue = edge.GetValueOrDefault("createdAtUtc", DateTime.UtcNow.ToString("o"));
-                createdAtUtc = DateTime.Parse(createdAtValue.ToString());
+                try
+                {
+                    var createdAtValue = edge["createdAtUtc"];
+                    createdAtUtc = DateTime.Parse(createdAtValue.ToString());
+                }
+                catch
+                {
+                    createdAtUtc = DateTime.UtcNow;
+                }
             }
             else
             {
