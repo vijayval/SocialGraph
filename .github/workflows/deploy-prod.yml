@@ -1,21 +1,21 @@
-name: Deploy to Azure App Service (Dev)
+name: Deploy to Azure App Service (prod)
 
 on:
   push:
     branches:
-      - develop
+      - main
   workflow_dispatch:
 
 env:
   DOTNET_VERSION: '9.0.x'
-  AZURE_WEBAPP_NAME: 'stunsy-socialgraph-api-staging'
+  AZURE_WEBAPP_NAME: 'stunsy-socialgraph-api'
   AZURE_WEBAPP_PACKAGE_PATH: './Stunsy.SocialGraph.Api'
-  ASPNETCORE_ENVIRONMENT: 'Development'
+  ASPNETCORE_ENVIRONMENT: 'Production'
 
 jobs:
   build-and-deploy:
     runs-on: windows-latest
-    environment: dev
+    environment: prod
     
     steps:
     - name: Checkout code
@@ -46,7 +46,7 @@ jobs:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ${{ github.workspace }}/publish
       env:
-        ASPNETCORE_ENVIRONMENT: 'Development'
+        ASPNETCORE_ENVIRONMENT: 'Production'
         Gremlin__Hostname: ${{ vars.GREMLIN_HOSTNAME }}
         Gremlin__Port: ${{ vars.GREMLIN_PORT }}
         Gremlin__Database: ${{ vars.GREMLIN_DATABASE }}

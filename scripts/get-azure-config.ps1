@@ -12,10 +12,12 @@ Write-Host "Environment: $Environment" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Force correct subscription and resource group
+az account set --subscription "Stunsy-Prod" | Out-Null
 # Configuration
 $cosmosAccountName = "stunsy-socialgraph"
-$resourceGroup = "rg-stunsy-devdb"
-$appServiceName = "stunsy-socialgraph-api-dev"
+$resourceGroup = "rg-stunsy-prod"
+$appServiceName = "stunsy-socialgraph-api"
 
 # Check if logged in to Azure
 Write-Host "Checking Azure CLI login status..." -ForegroundColor Yellow

@@ -2,10 +2,13 @@
 
 param(
     [Parameter(Mandatory=$false)]
-    [string]$AppName = "github-actions-socialgraph-dev",
+    [string]$AppName = "github-actions-socialgraph-prod",
     [Parameter(Mandatory=$false)]
-    [string]$ResourceGroup = "rg-stunsy-dev"
+    [string]$ResourceGroup = "rg-stunsy-prod"
 )
+
+# Force correct subscription
+az account set --subscription "Stunsy-Prod" | Out-Null
 
 Write-Host "Creating Azure Service Principal for GitHub Actions..." -ForegroundColor Cyan
 Write-Host ""
